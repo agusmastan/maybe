@@ -1,0 +1,34 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol=INVALID&market=USD&apikey=<ALPHA_VANTAGE_API_KEY>
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Faraday v2.7.4
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json
+      Cache-Control:
+      - no-cache
+      Date:
+      - Mon, 01 Jan 2024 12:00:00 GMT
+    body:
+      encoding: UTF-8
+      string: |
+        {
+          "Error Message": "Invalid API call. Please retry or visit the documentation (https://www.alphavantage.co/documentation/) for DIGITAL_CURRENCY_DAILY."
+        }
+  recorded_at: Mon, 01 Jan 2024 12:00:00 GMT
+recorded_with: VCR 6.1.0

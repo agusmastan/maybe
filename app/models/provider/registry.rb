@@ -3,7 +3,7 @@ class Provider::Registry
 
   Error = Class.new(StandardError)
 
-  CONCEPTS = %i[exchange_rates securities llm]
+  CONCEPTS = %i[exchange_rates securities llm crypto_prices]
 
   validates :concept, inclusion: { in: CONCEPTS }
 
@@ -67,6 +67,14 @@ class Provider::Registry
 
         Provider::Openai.new(access_token)
       end
+
+      def alpha_vantage
+        api_key = ENV.fetch("ALPHA_VANTAGE_API_KEY", Setting.alpha_vantage_api_key)
+
+        return nil unless api_key.present?
+
+        Provider::AlphaVantage.new(api_key)
+      end
   end
 
   def initialize(concept)
@@ -95,6 +103,8 @@ class Provider::Registry
         %i[synth]
       when :securities
         %i[synth]
+      when :crypto_prices
+        %i[alpha_vantage]
       when :llm
         %i[openai]
       else

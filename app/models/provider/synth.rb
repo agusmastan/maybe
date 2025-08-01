@@ -6,6 +6,7 @@ class Provider::Synth < Provider
   InvalidExchangeRateError = Class.new(Error)
   InvalidSecurityPriceError = Class.new(Error)
 
+
   def initialize(api_key)
     @api_key = api_key
   end
@@ -247,4 +248,6 @@ class Provider::Synth < Provider
         total_pages: total_pages
       )
     end
+
+
 end

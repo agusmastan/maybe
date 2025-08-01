@@ -1,3 +1,9 @@
 <%# locals: (account:, url:) %>
 
-<%= render "accounts/form", account: account, url: url %>
+<%= render "accounts/form", account: account, url: url do |form| %>
+  <%= form.text_field :symbol, 
+                      placeholder: t(".symbol_placeholder"), 
+                      label: t(".symbol_label"),
+                      value: account.accountable.symbol,
+                      name: "account[accountable_attributes][symbol]" %>
+<% end %>

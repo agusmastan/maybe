@@ -5,3 +5,6 @@ en:
       edit: Edit %{account}
     new:
       title: Enter account balance
+    form:
+      symbol_label: "Cryptocurrency Symbol"
+      symbol_placeholder: "BTC, ETH, SOL..."
