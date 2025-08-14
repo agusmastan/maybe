@@ -13,13 +13,13 @@ class Provider::AlphaVantage < Provider
   def healthy?
     with_provider_response do
       # Hacer una llamada de prueba para verificar conectividad
-      fetch_crypto_price(symbol: "BTC", currency: "USD")
+      fetch_crypto_price(symbol: "BTC", currency: "EUR")
       true
     end
   end
   
   # Implementar método requerido por CryptoPrice concept
-  def fetch_crypto_price(symbol:, currency: "USD", date: Date.current)
+  def fetch_crypto_price(symbol:, currency: "EUR", date: Date.current)
     with_provider_response do
       response = client.get(base_url) do |req|
         req.params["function"] = "DIGITAL_CURRENCY_DAILY"
