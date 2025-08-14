@@ -15,10 +15,6 @@ This document lists the environment variables that can be configured for the May
 - **`SYNTH_API_KEY`**: API key for Synth Finance (used for exchange rates and securities data)
   - Can also be configured via Settings UI in self-hosted mode
 
-### OpenAI
-- **`OPENAI_ACCESS_TOKEN`**: Access token for OpenAI API integration
-  - Can also be configured via Settings UI in self-hosted mode
-
 ## Database and Security
 
 ### Database

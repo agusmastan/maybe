@@ -61,11 +61,8 @@ class Provider::Registry
       end
 
       def openai
-        access_token = ENV.fetch("OPENAI_ACCESS_TOKEN", Setting.openai_access_token)
-
-        return nil unless access_token.present?
-
-        Provider::Openai.new(access_token)
+        # OpenAI integration disabled: no token usage
+        nil
       end
 
       def alpha_vantage
@@ -106,9 +103,9 @@ class Provider::Registry
       when :crypto_prices
         %i[alpha_vantage]
       when :llm
-        %i[openai]
+        []
       else
-        %i[synth plaid_us plaid_eu github openai]
+        %i[synth plaid_us plaid_eu github]
       end
     end
 end

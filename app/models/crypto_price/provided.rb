@@ -7,7 +7,7 @@ module CryptoPrice::Provided
       registry.get_provider(:alpha_vantage)
     end
 
-    def current_price(symbol:, currency: "USD")
+    def current_price(symbol:, currency: "EUR")
       return nil unless provider.present? # No provider configured (some self-hosted apps)
 
       # Cache for 5 minutes to avoid excessive API calls
