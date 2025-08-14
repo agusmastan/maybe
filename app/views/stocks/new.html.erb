@@ -1,0 +1,16 @@
+<% if params[:step] == "method_select" %>
+  <%= render "accounts/new/method_selector",
+             path: new_stock_path(return_to: params[:return_to]),
+             show_us_link: @show_us_link,
+             show_eu_link: @show_eu_link,
+             accountable_type: "Stocks" %>
+<% else %>
+  <%= render DS::Dialog.new do |dialog| %>
+    <% dialog.with_header(title: "Add Stocks") %>
+    <% dialog.with_body do %>
+      <%= render "form", account: @account, url: stocks_path %>
+    <% end %>
+  <% end %>
+<% end %>
+
+

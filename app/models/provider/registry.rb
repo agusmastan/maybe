@@ -97,9 +97,9 @@ class Provider::Registry
     def available_providers
       case concept
       when :exchange_rates
-        %i[synth]
+        %i[alpha_vantage]
       when :securities
-        %i[synth]
+        %i[alpha_vantage]
       when :crypto_prices
         %i[alpha_vantage]
       when :llm

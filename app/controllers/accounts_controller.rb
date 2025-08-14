@@ -26,6 +26,25 @@ class AccountsController < ApplicationController
   end
 
   def sync
+     # For Crypto accounts, refresh spot price immediately before syncing
+    if @account.accountable_type == "Crypto"
+      begin
+        crypto = @account.accountable
+        crypto.refresh_spot_price_now!
+        # Invalidate cache used by CryptoPrice.current_price to reflect fresh value on page
+        currency = @account.family.currency
+        Rails.cache.delete("crypto_price_#{crypto.symbol}_#{currency}")
+
+        # Si hay cantidad guardada, ajustar balance a cantidad * precio
+        if crypto.quantity.present? && crypto.spot_price_cents.present?
+          new_balance = crypto.quantity.to_d * (crypto.spot_price_cents.to_d / 100)
+          @account.set_current_balance(new_balance)
+        end
+      rescue => e
+        Rails.logger.warn("Failed to refresh crypto spot price: #{e.class} - #{e.message}")
+      end
+    end
+
     unless @account.syncing?
       @account.sync_later
     end

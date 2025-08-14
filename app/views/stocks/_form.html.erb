@@ -1,0 +1,25 @@
+<%# locals: (account:, url:) %>
+
+<% if @error_message.present? %>
+  <%= render DS::Alert.new(message: @error_message, variant: :error) %>
+<% end %>
+
+<%= styled_form_with model: nil, url: url, scope: :stock, data: { turbo: false }, class: "flex flex-col gap-4 justify-between grow text-primary" do |form| %>
+  <%= form.hidden_field :return_to, value: params[:return_to] %>
+
+  <%= form.text_field :ticker,
+                      label: "Ticker (ej: TSLA, AAPL)",
+                      placeholder: "TSLA",
+                      required: true %>
+
+  <%= form.number_field :quantity,
+                        label: "Cantidad",
+                        placeholder: "10",
+                        step: :any,
+                        min: 0,
+                        required: true %>
+
+  <%= form.submit "Crear cuenta de acciones" %>
+<% end %>
+
+

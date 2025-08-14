@@ -11,6 +11,10 @@
       <div class="flex flex-row gap-2 items-baseline">
         <%= tag.p view_balance_money.format, class: "text-primary text-3xl font-medium truncate" %>
 
+        <% if account.crypto? && account.accountable.quantity.present? %>
+           <%= tag.p number_with_precision(account.accountable.quantity, precision: 8), class: "text-sm font-medium text-secondary" %>
+        <% end %>
+        
         <% if converted_balance_money %>
           <%= tag.p converted_balance_money.format, class: "text-sm font-medium text-secondary" %>
         <% end %>

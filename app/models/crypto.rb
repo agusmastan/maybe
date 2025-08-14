@@ -31,6 +31,11 @@ class Crypto < ApplicationRecord
     Money.new(spot_price_cents, spot_price_currency)
   end
 
+  # Public wrapper to refresh current spot price on-demand (e.g., via UI refresh button)
+  def refresh_spot_price_now!
+    refresh_spot_price
+  end
+
   private
 
   def refresh_spot_price
@@ -43,7 +48,7 @@ class Crypto < ApplicationRecord
     
     if price_data
       Rails.logger.info("Got price for #{symbol}: #{price_data.price} #{price_data.currency}")
-      update_columns(
+      update!(
         spot_price_cents: (price_data.price * 100).to_i,
         spot_price_currency: price_data.currency
       )
