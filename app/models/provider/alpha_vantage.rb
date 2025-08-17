@@ -60,7 +60,7 @@ class Provider::AlphaVantage < Provider
         final_currency = to_currency.upcase
       end
 
-      StockPrice::Price.new(
+      Provider::Concepts::StockPrice::Price.new(
         symbol: symbol.upcase,
         price: final_price,
         currency: final_currency,

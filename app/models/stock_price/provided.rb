@@ -4,6 +4,11 @@ module StockPrice::Provided
   class_methods do
     def provider
       registry = Provider::Registry.for_concept(:securities)
+      preferred = (ENV["PRICE_PROVIDER_STOCKS"] || "").presence&.to_sym
+      if preferred.present?
+        return registry.get_provider(preferred)
+      end
+      # Por defecto Alpha Vantage
       registry.get_provider(:alpha_vantage)
     end
 

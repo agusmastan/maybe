@@ -14,6 +14,10 @@
         <% if account.crypto? && account.accountable.quantity.present? %>
            <%= tag.p number_with_precision(account.accountable.quantity, precision: 8), class: "text-sm font-medium text-secondary" %>
         <% end %>
+
+        <% if account.stock? && account.accountable.quantity.present? %>
+           <%= tag.p number_with_precision(account.accountable.quantity, precision: 0), class: "text-sm font-medium text-secondary" %>
+        <% end %>
         
         <% if converted_balance_money %>
           <%= tag.p converted_balance_money.format, class: "text-sm font-medium text-secondary" %>

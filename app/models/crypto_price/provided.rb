@@ -4,6 +4,11 @@ module CryptoPrice::Provided
   class_methods do
     def provider
       registry = Provider::Registry.for_concept(:crypto_prices)
+      preferred = (ENV["PRICE_PROVIDER_CRYPTO"] || "").presence&.to_sym
+      if preferred.present?
+        return registry.get_provider(preferred)
+      end
+      # Por defecto mantenemos Alpha Vantage para no romper instalaciones existentes
       registry.get_provider(:alpha_vantage)
     end
 

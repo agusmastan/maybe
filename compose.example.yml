@@ -12,21 +12,6 @@
 # but if you're running this outside of a local network, it is recommended
 # to set the environment variables for extra security.
 #
-# Setup:
-# ------
-#
-# To run this, you should read the setup guide:
-#
-# https://github.com/maybe-finance/maybe/blob/main/docs/hosting/docker.md
-#
-# Troubleshooting:
-# ----------------
-#
-# If you run into problems, you should open a Discussion here:
-#
-# https://github.com/maybe-finance/maybe/discussions/categories/general
-#
-
 x-db-env: &db_env
   POSTGRES_USER: ${POSTGRES_USER:-maybe_user}
   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-maybe_password}
@@ -38,17 +23,27 @@ x-rails-env: &rails_env
   SELF_HOSTED: "true"
   RAILS_FORCE_SSL: "false"
   RAILS_ASSUME_SSL: "false"
+ # RAILS_ENV: "development"
   DB_HOST: db
   DB_PORT: 5432
   REDIS_URL: redis://redis:6379/1
   DOCKER_CONTAINER: "true"
   BIND: "tcp://0.0.0.0:3000"
-# NOTE: enabling OpenAI will incur costs when you use AI-related features in the app (chat, rules).  Make sure you have set appropriate spend limits on your account before adding this.
-  # OPENAI integration disabled; token not used
+  # Alpha Vantage API key for crypto prices (free tier: 25 requests/day)
+  ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY}
+  # Finnhub REST provider for stocks/crypto prices (free tier: 25 requests/minute)
+  FINNHUB_API_KEY: ${FINNHUB_API_KEY}
+  # Provider selection (defaults keep Finnhub for stocks/crypto)
+  PRICE_PROVIDER_STOCKS: ${PRICE_PROVIDER_STOCKS:-finnhub}
+  PRICE_PROVIDER_CRYPTO: ${PRICE_PROVIDER_CRYPTO:-finnhub}
 
 services:
   web:
-    image: ghcr.io/maybe-finance/maybe:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_COMMIT_SHA: ${BUILD_COMMIT_SHA:-unknown}
     volumes:
       - app-storage:/rails/storage
     ports:
@@ -63,9 +58,14 @@ services:
         condition: service_healthy
     networks:
       - maybe_net
+    command: ["./bin/rails", "server", "-b", "0.0.0.0"]
 
   worker:
-    image: ghcr.io/maybe-finance/maybe:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_COMMIT_SHA: ${BUILD_COMMIT_SHA:-unknown}
     command: bundle exec sidekiq
     restart: unless-stopped
     depends_on:

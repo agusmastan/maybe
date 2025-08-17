@@ -31,16 +31,17 @@ class ValuationsController < ApplicationController
 
   def create
     account = Current.family.accounts.find(params.dig(:entry, :account_id))
-    if account.crypto?
-      # Interpret amount as quantity to add for Crypto accounts
+    if (account.crypto? || account.stock?)
+      type = account.crypto? ? :crypto : :stock
+      # Interpret amount as quantity to add for Crypto/Stock accounts
       qty_to_add = entry_params[:amount].to_d
-      crypto = account.accountable
-      new_qty = (crypto.quantity || 0).to_d + qty_to_add
-      crypto.update!(quantity: new_qty)
+      account = account.accountable
+      new_qty = (type.quantity || 0).to_d + qty_to_add
+      type.update!(quantity: new_qty)
 
       # Recalculate balance = quantity * spot price (if available)
-      if crypto.spot_price_cents.present?
-        new_balance = new_qty * (crypto.spot_price_cents.to_d / 100)
+      if type.spot_price_cents.present?
+        new_balance = new_qty * (type.spot_price_cents.to_d / 100)
         account.set_current_balance(new_balance)
       end
       result = OpenStruct.new(success?: true)
@@ -67,13 +68,14 @@ class ValuationsController < ApplicationController
     @entry.update!(notes: entry_params[:notes]) if entry_params[:notes].present?
 
     if entry_params[:date].present? && entry_params[:amount].present?
-      if @entry.account.crypto?
+      if (@entry.account.crypto? || @entry.account.stock?)
+        type = @entry.account.crypto? ? :crypto : :stock
         qty_to_add = entry_params[:amount].to_d
-        crypto = @entry.account.accountable
-        new_qty = (crypto.quantity || 0).to_d + qty_to_add
-        crypto.update!(quantity: new_qty)
-        if crypto.spot_price_cents.present?
-          new_balance = new_qty * (crypto.spot_price_cents.to_d / 100)
+        type = @entry.account.accountable
+        new_qty = (type.quantity || 0).to_d + qty_to_add
+        type.update!(quantity: new_qty)
+        if type.spot_price_cents.present?
+          new_balance = new_qty * (type.spot_price_cents.to_d / 100)
           result = @entry.account.set_current_balance(new_balance)
         else
           result = OpenStruct.new(success?: true)

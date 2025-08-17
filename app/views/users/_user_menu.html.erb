@@ -15,7 +15,6 @@
           <% end %>
         </div>
       </div>
-
       <% if self_hosted? %>
         <div class="px-4 py-3 border-t border-tertiary">
           <p class="text-sm">
@@ -28,6 +27,7 @@
           </p>
         </div>
       <% end %>
+      
     <% end %>
 
     <% menu.with_item(variant: "link", text: "Settings", icon: "settings", href: settings_profile_path(return_to: request.fullpath)) %>

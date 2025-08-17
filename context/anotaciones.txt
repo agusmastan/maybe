@@ -1,0 +1,2 @@
+Ejecutar bd (con \dt ves las tablas y con q salis)
+psql -U maybe_user -d maybe_production

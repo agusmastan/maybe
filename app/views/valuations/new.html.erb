@@ -10,7 +10,7 @@
 
       <div class="space-y-3">
         <%= form.date_field :date, label: true, required: true, value: Date.current, min: Entry.min_supported_date, max: Date.current %>
-        <% if @entry.account&.crypto? %>
+        <% if @entry.account&.crypto? || @entry.account&.stock? %>
           <%= form.number_field :amount, label: "Quantity to add", required: true, step: :any, min: 0 %>
         <% else %>
           <%= form.money_field :amount, label: t(".amount"), required: true, disable_currency: true %>

@@ -14,7 +14,7 @@
               href: new_valuation_path(account_id: account.id),
               data: { turbo_frame: :modal }) %>
 
-          <% unless account.crypto? %>
+          <% unless (account.crypto? || account.stock?) %>
             <% menu.with_item(
                 variant: "link",
                 text: "New transaction",

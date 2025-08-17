@@ -72,6 +72,14 @@ class Provider::Registry
 
         Provider::AlphaVantage.new(api_key)
       end
+
+      def finnhub
+        api_key = ENV.fetch("FINNHUB_API_KEY", Setting.respond_to?(:finnhub_api_key) ? Setting.finnhub_api_key : nil)
+
+        return nil unless api_key.present?
+
+        Provider::Finnhub.new(api_key)
+      end
   end
 
   def initialize(concept)
@@ -99,9 +107,9 @@ class Provider::Registry
       when :exchange_rates
         %i[alpha_vantage]
       when :securities
-        %i[alpha_vantage]
+        %i[finnhub alpha_vantage synth]
       when :crypto_prices
-        %i[alpha_vantage]
+        %i[finnhub alpha_vantage]
       when :llm
         []
       else

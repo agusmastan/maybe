@@ -1,0 +1,9 @@
+- Calculo diario de usd a eur (almacenar en bd)
+- Correccion boton edit para cryptos/stocks
+- Añadir ingresos periodicos (x ej que el 1 de cada mes sume el sueldo a la cuenta de cash)
+- Cambiar a utilizar investments -> brokerage en lugar de stocks
+    - Calculo automatico de precios
+    - Cambio de view para que consulte por cantidad de acciones y no por balance
+    - Ver donde y como esta almacenada la cantidad de acciones (en activity -> holdings lo muestra)
+- Boton de actualizar todos los precios o que cada cierto tiempo se actualicen automaticamente
+- Añadir dominio al DNS para entrar desde maybe.local en vez de desde la IP. 
