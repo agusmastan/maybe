@@ -6,7 +6,28 @@ module Security::Provided
   class_methods do
     def provider
       registry = Provider::Registry.for_concept(:securities)
-      registry.get_provider(:synth)
+      registry.get_provider(:finnhub)
+    end
+
+    # Provider híbrido: AlphaVantage para datos históricos, fallback a Finnhub
+    def historical_price_provider
+      registry = Provider::Registry.for_concept(:securities)
+      # Intentar AlphaVantage primero (tiene datos históricos gratuitos)
+      registry.get_provider(:alpha_vantage) || registry.get_provider(:finnhub)
+    end
+
+    # Provider para precios ACTUALES: Finnhub primero (mejor rate limit: 60/min vs 25/día)
+    def current_price_provider
+      registry = Provider::Registry.for_concept(:securities)
+      # Finnhub: 60 requests/minuto vs AlphaVantage: 25 requests/día
+      registry.get_provider(:finnhub) || registry.get_provider(:alpha_vantage)
+    end
+
+    # Provider para información: Finnhub primero, fallback a AlphaVantage
+    def info_provider
+      registry = Provider::Registry.for_concept(:securities)
+      # Finnhub tiene mejor info de empresas
+      registry.get_provider(:finnhub) || registry.get_provider(:alpha_vantage)
     end
 
     def search_provider(symbol, country_code: nil, exchange_operating_mic: nil)
@@ -41,9 +62,23 @@ module Security::Provided
 
     return price if price.present?
 
-    # Make sure we have a data provider before fetching
-    return nil unless provider.present?
-    response = provider.fetch_security_price(
+    # Decidir qué provider usar basado en si es precio actual o histórico
+    is_current_price = date >= Date.current
+    price_provider = if is_current_price
+      # Para precios actuales, usar Finnhub (mejor rate limit)
+      self.class.current_price_provider
+    else
+      # Para precios históricos, usar AlphaVantage (datos gratuitos)
+      self.class.historical_price_provider
+    end
+    
+    return nil unless price_provider.present?
+
+    provider_name = price_provider.class.name
+    price_type = is_current_price ? "current" : "historical"
+    Rails.logger.info("Using #{provider_name} for #{price_type} price: #{ticker} on #{date}")
+    
+    response = price_provider.fetch_security_price(
       symbol: ticker,
       exchange_operating_mic: exchange_operating_mic,
       date: date
@@ -62,6 +97,9 @@ module Security::Provided
   end
 
   def import_provider_details(clear_cache: false)
+    # Usar info_provider (Finnhub primero, fallback AlphaVantage)
+    provider = self.class.info_provider
+    
     unless provider.present?
       Rails.logger.warn("No provider configured for Security.import_provider_details")
       return
@@ -71,6 +109,8 @@ module Security::Provided
       return
     end
 
+    Rails.logger.info("Using #{provider.class.name} for security info: #{ticker}")
+    
     response = provider.fetch_security_info(
       symbol: ticker,
       exchange_operating_mic: exchange_operating_mic
@@ -91,14 +131,19 @@ module Security::Provided
   end
 
   def import_provider_prices(start_date:, end_date:, clear_cache: false)
-    unless provider.present?
+    # Usar historical_price_provider (AlphaVantage primero, fallback Finnhub)
+    price_provider = self.class.historical_price_provider
+    
+    unless price_provider.present?
       Rails.logger.warn("No provider configured for Security.import_provider_prices")
       return 0
     end
 
+    Rails.logger.info("Using #{price_provider.class.name} for historical prices: #{ticker}")
+
     Security::Price::Importer.new(
       security: self,
-      security_provider: provider,
+      security_provider: price_provider,
       start_date: start_date,
       end_date: end_date,
       clear_cache: clear_cache

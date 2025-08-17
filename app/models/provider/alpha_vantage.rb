@@ -1,6 +1,8 @@
 class Provider::AlphaVantage < Provider
   include Provider::Concepts::CryptoPrice
   include Provider::Concepts::StockPrice
+  include Provider::Concepts::ExchangeRate
+  include Provider::SecurityConcept
   
   # Subclass so errors caught in this provider are raised as Provider::AlphaVantage::Error
   Error = Class.new(Provider::Error)
@@ -66,6 +68,167 @@ class Provider::AlphaVantage < Provider
         currency: final_currency,
         timestamp: date
       )
+    end
+  end
+
+  # ================================
+  # SECURITIES METHODS (for hybrid solution) - PUBLIC METHODS
+  # ================================
+
+  def search_securities(symbol, country_code: nil, exchange_operating_mic: nil)
+    with_provider_response do
+      response = client.get(base_url) do |req|
+        req.params["function"] = "SYMBOL_SEARCH"
+        req.params["keywords"] = symbol
+        req.params["apikey"] = api_key
+      end
+      
+      data = JSON.parse(response.body)
+      
+      if data.key?("Error Message")
+        raise Error.new("Alpha Vantage error: #{data['Error Message']}")
+      end
+      
+      if data.key?("Note")
+        raise RateLimitError.new("Alpha Vantage rate limit exceeded: #{data['Note']}")
+      end
+      
+      matches = data.dig("bestMatches") || []
+      
+      matches.first(25).map do |match|
+        Provider::SecurityConcept::Security.new(
+          symbol: match["1. symbol"],
+          name: match["2. name"],
+          logo_url: nil,
+          exchange_operating_mic: exchange_operating_mic || "XNAS",
+          country_code: country_code || match["4. region"]
+        )
+      end
+    end
+  end
+
+  def fetch_security_info(symbol:, exchange_operating_mic:)
+    with_provider_response do
+      response = client.get(base_url) do |req|
+        req.params["function"] = "OVERVIEW"
+        req.params["symbol"] = symbol
+        req.params["apikey"] = api_key
+      end
+      
+      data = JSON.parse(response.body)
+      
+      if data.key?("Error Message")
+        raise Error.new("Alpha Vantage error: #{data['Error Message']}")
+      end
+      
+      if data.key?("Note")
+        raise RateLimitError.new("Alpha Vantage rate limit exceeded: #{data['Note']}")
+      end
+      
+      if data.empty? || data["Symbol"].blank?
+        raise Error.new("No company info found for #{symbol}")
+      end
+      
+      Provider::SecurityConcept::SecurityInfo.new(
+        symbol: symbol,
+        name: data["Name"],
+        links: { website: data["OfficialSite"] },
+        logo_url: nil,
+        description: data["Description"],
+        kind: "stock",
+        exchange_operating_mic: exchange_operating_mic
+      )
+    end
+  end
+
+  def fetch_security_price(symbol:, exchange_operating_mic:, date:)
+    with_provider_response do
+      historical_prices = fetch_security_prices(
+        symbol: symbol,
+        exchange_operating_mic: exchange_operating_mic,
+        start_date: date,
+        end_date: date
+      )
+      
+      if historical_prices.empty?
+        raise Error.new("No price found for #{symbol} on #{date}")
+      end
+      
+      historical_prices.first
+    end
+  end
+
+  def fetch_security_prices(symbol:, exchange_operating_mic:, start_date:, end_date:)
+    with_provider_response do
+      # ⚠️ IMPORTANTE: AlphaVantage free tier = 25 requests/day
+      Rails.logger.info("AlphaVantage: Fetching historical data for #{symbol} (#{start_date} to #{end_date})")
+      
+      response = client.get(base_url) do |req|
+        req.params["function"] = "TIME_SERIES_DAILY"
+        req.params["symbol"] = symbol
+        req.params["outputsize"] = "compact" # Solo últimos 100 días para conservar rate limit
+        req.params["apikey"] = api_key
+      end
+      
+      data = JSON.parse(response.body)
+      
+      if data.key?("Error Message")
+        raise Error.new("Alpha Vantage error: #{data['Error Message']}")
+      end
+      
+      if data.key?("Note")
+        raise RateLimitError.new("Alpha Vantage rate limit exceeded: #{data['Note']}")
+      end
+      
+      if data.key?("Information")
+        raise Error.new("Alpha Vantage info: #{data['Information']}")
+      end
+      
+      time_series = data.dig("Time Series (Daily)")
+      
+      if time_series.blank?
+        Rails.logger.warn("No time series data returned for #{symbol}")
+        return []
+      end
+      
+      prices = []
+      
+      time_series.each do |date_str, price_data|
+        date = Date.parse(date_str)
+        
+        # Filter to requested date range
+        next if date < start_date || date > end_date
+        
+        close_price = price_data["4. close"].to_f
+        
+        prices << Provider::SecurityConcept::Price.new(
+          symbol: symbol,
+          date: date,
+          price: close_price,
+          currency: "USD",
+          exchange_operating_mic: exchange_operating_mic
+        )
+      end
+      
+      Rails.logger.info("AlphaVantage: Retrieved #{prices.count} price records for #{symbol}")
+      prices.sort_by(&:date).reverse
+    end
+  end
+
+  # ================================
+  # EXCHANGE RATE METHODS (for ExchangeRate concept) - PUBLIC METHOD
+  # ================================
+
+  def fetch_exchange_rate(from:, to:, date: Date.current)
+    with_provider_response do
+      response = client.get(base_url) do |req|
+        req.params["function"] = "CURRENCY_EXCHANGE_RATE"
+        req.params["from_currency"] = from.upcase
+        req.params["to_currency"] = to.upcase
+        req.params["apikey"] = api_key
+      end
+      
+      parse_exchange_rate_response(response.body, from, to, date)
     end
   end
   
@@ -152,6 +315,8 @@ class Provider::AlphaVantage < Provider
     [ close_str.to_f, latest_date ]
   end
 
+
+
   def parse_fx_rate(body)
     data = JSON.parse(body)
     if data.key?("Error Message")
@@ -170,4 +335,43 @@ class Provider::AlphaVantage < Provider
     raise InvalidCryptoPriceError.new("Invalid exchange rate") unless rate_str.present?
     rate_str.to_f
   end
+
+  def parse_exchange_rate_response(body, from, to, date)
+    data = JSON.parse(body)
+
+    # Verificar errores específicos de Alpha Vantage
+    if data.key?("Error Message")
+      raise Error.new("Alpha Vantage error: #{data['Error Message']}")
+    end
+
+    if data.key?("Note")
+      raise RateLimitError.new("Alpha Vantage rate limit exceeded: #{data['Note']}")
+    end
+
+    if data.key?("Information")
+      raise Error.new("Alpha Vantage info: #{data['Information']}")
+    end
+
+    # Formato de CURRENCY_EXCHANGE_RATE
+    rate_block = data.dig("Realtime Currency Exchange Rate")
+    unless rate_block.is_a?(Hash)
+      raise Error.new("No exchange rate data found for #{from} to #{to}")
+    end
+
+    rate_str = rate_block["5. Exchange Rate"]
+    last_refreshed = rate_block["6. Last Refreshed"]
+
+    if rate_str.nil? || rate_str.to_s.strip.empty?
+      raise Error.new("Invalid exchange rate data for #{from} to #{to}")
+    end
+
+    Provider::Concepts::ExchangeRate::Rate.new(
+      from: from.upcase,
+      to: to.upcase,
+      rate: rate_str.to_f,
+      date: date
+    )
+  end
+
+
 end

@@ -113,7 +113,7 @@ class Provider::Registry
       when :llm
         []
       else
-        %i[synth plaid_us plaid_eu github]
+        %i[plaid_us plaid_eu github]
       end
     end
 end

@@ -77,6 +77,19 @@ class Security::Resolver
     def close_match_from_provider
       filtered_candidates = provider_search_result
 
+      # ⚠️ IMPORTANTE: Ser más estricto con coincidencias para evitar PLTR -> PLOO
+      # Solo aceptar coincidencias si el ticker coincide EXACTAMENTE
+      exact_ticker_matches = filtered_candidates.select do |s|
+        s.ticker.upcase.to_s == symbol.upcase.to_s
+      end
+
+      # Si hay coincidencias exactas de ticker, usar solo esas
+      filtered_candidates = exact_ticker_matches if exact_ticker_matches.any?
+
+      # Si no hay coincidencias exactas de ticker, NO hacer coincidencias aproximadas
+      # Esto evita que PLTR se convierta en PLOO
+      return nil if exact_ticker_matches.empty?
+
       # If a country code is specified, we MUST find a match with the same code
       if country_code.present?
         filtered_candidates = filtered_candidates.select { |s| s.country_code.upcase.to_s == country_code.upcase.to_s }

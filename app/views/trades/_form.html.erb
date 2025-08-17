@@ -24,7 +24,10 @@
         }} %>
 
       <% if %w[buy sell].include?(type) %>
-        <% if Security.provider.present? %>
+        <%# TEMPORALMENTE: Usar siempre campo de texto libre para evitar problemas de API %>
+        <%= form.text_field :manual_ticker, label: "Ticker symbol", placeholder: "AAPL", required: true %>
+        <%# TODO: Mejorar combobox para manejar rate limits y errores de API %>
+        <% if false # Security.provider.present? %>
           <div class="form-field combobox">
             <%= form.combobox :ticker,
                             securities_path(country_code: Current.family.country),
@@ -33,8 +36,6 @@
                             placeholder: t(".ticker_placeholder"),
                             required: true %>
           </div>
-        <% else %>
-          <%= form.text_field :manual_ticker, label: "Ticker symbol", placeholder: "AAPL", required: true %>
         <% end %>
       <% end %>
 

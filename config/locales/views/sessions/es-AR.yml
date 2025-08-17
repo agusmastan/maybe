@@ -1,0 +1,15 @@
+---
+es-AR:
+  sessions:
+    create:
+      invalid_credentials: Email o contraseña inválidos.
+    destroy:
+      logout_successful: Has cerrado sesión correctamente.
+    new:
+      email: Dirección de correo electrónico
+      email_placeholder: tu@ejemplo.com
+      forgot_password: ¿Olvidaste tu contraseña?
+      password: Contraseña
+      submit: Iniciar sesión
+      title: Iniciar sesión en tu cuenta
+      password_placeholder: Ingresa tu contraseña

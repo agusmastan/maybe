@@ -18,3 +18,9 @@ run_security_health_checks:
   class: "SecurityHealthCheckJob"
   queue: "scheduled"
   description: "Runs security health checks to detect issues with security data"
+
+update_usd_to_eur:
+  cron: "0 */12 * * *" # Every 12 hours (00:00 and 12:00 UTC)
+  class: "UpdateUsdToEurJob"
+  queue: "scheduled"
+  description: "Updates USD to EUR exchange rate using AlphaVantage API"
