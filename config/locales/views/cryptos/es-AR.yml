@@ -1,0 +1,10 @@
+---
+es-AR:
+  cryptos:
+    edit:
+      edit: Editar %{account}
+    new:
+      title: Ingresar saldo de cuenta
+    form:
+      symbol_label: "Símbolo de criptomoneda"
+      symbol_placeholder: "BTC, ETH, SOL..."

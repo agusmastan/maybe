@@ -1,0 +1,64 @@
+---
+es-AR:
+  accounts:
+    account:
+      troubleshoot: Troubleshoot
+    chart:
+      data_not_available: No hay datos disponibles para el período seleccionado
+    create:
+      success: "%{type} cuenta creada"
+    destroy:
+      success: "%{type} cuenta programada para eliminación"
+    empty:
+      empty_message: Agregar una cuenta ya sea a través de conexión, importación o manualmente.
+      new_account: Nueva cuenta
+      no_accounts: No hay cuentas aún
+    form:
+      balance: Saldo actual
+      name_label: Nombre de la cuenta
+      name_placeholder: Ejemplo de nombre de cuenta
+    index:
+      accounts: Cuentas
+      manual_accounts:
+        other_accounts: Otras cuentas
+      new_account: Nueva cuenta
+      sync: Sincronizar todas
+    new:
+      import_accounts: Importar cuentas
+      method_selector:
+        connected_entry: Enlazar cuenta
+        connected_entry_eu: Enlazar cuenta de la UE
+        manual_entry: Ingresar saldo de cuenta
+        title: ¿Cómo te gustaría agregarla?
+      title: ¿Qué te gustaría agregar?
+    show:
+      activity:
+        amount: Cantidad
+        balance: Saldo
+        date: Fecha
+        entries: entradas
+        entry: entrada
+        new: Nuevo
+        new_balance: Nuevo saldo
+        new_transaction: Nueva transacción
+        no_entries: No se encontraron entradas
+        title: Actividad
+      chart:
+        balance: Saldo
+        owed: Cantidad adeudada
+      menu:
+        confirm_accept: Eliminar "%{name}"
+        confirm_body_html: "<p>Al eliminar esta cuenta, se borrará su historial de valores, 
+          afectando varios aspectos de tu cuenta general. Esta acción tendrá un impacto directo en tus cálculos de neto
+          y los gráficos de la cuenta.</p><br /> <p>Después de la eliminación, no hay forma de que puedas restaurar la 
+          información de la cuenta porque tendrás que agregarla como una nueva cuenta.</p>"
+        confirm_title: ¿Eliminar cuenta?
+        edit: Editar
+        import: Importar transacciones
+        manage: Gestionar cuentas
+    update:
+      success: "%{type} cuenta actualizada"
+  email_confirmations:
+    new:
+      invalid_token: Enlace de confirmación inválido o expirado.
+      success_login: Tu correo electrónico ha sido confirmado. Por favor, inicia sesión con tu nuevo correo electrónico.

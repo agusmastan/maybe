@@ -62,21 +62,20 @@ module Security::Provided
 
     return price if price.present?
 
-    # Decidir qué provider usar basado en si es precio actual o histórico
+    # ⚠️ SOLO permitir fetch de precios ACTUALES para ahorrar tokens de API
     is_current_price = date >= Date.current
-    price_provider = if is_current_price
-      # Para precios actuales, usar Finnhub (mejor rate limit)
-      self.class.current_price_provider
-    else
-      # Para precios históricos, usar AlphaVantage (datos gratuitos)
-      self.class.historical_price_provider
+    
+    unless is_current_price
+      Rails.logger.info("⏭️  Historical price fetch DISABLED for #{ticker} on #{date} to save API tokens")
+      return nil # No hacer llamada histórica
     end
+    
+    # Solo para precios actuales, usar Finnhub (mejor rate limit: 60/min vs 25/día)
+    price_provider = self.class.current_price_provider
     
     return nil unless price_provider.present?
 
-    provider_name = price_provider.class.name
-    price_type = is_current_price ? "current" : "historical"
-    Rails.logger.info("Using #{provider_name} for #{price_type} price: #{ticker} on #{date}")
+    Rails.logger.info("Using #{price_provider.class.name} for CURRENT price: #{ticker} on #{date}")
     
     response = price_provider.fetch_security_price(
       symbol: ticker,
@@ -131,23 +130,27 @@ module Security::Provided
   end
 
   def import_provider_prices(start_date:, end_date:, clear_cache: false)
-    # Usar historical_price_provider (AlphaVantage primero, fallback Finnhub)
-    price_provider = self.class.historical_price_provider
+    # ⚠️ DESACTIVADO: Importación histórica deshabilitada para ahorrar tokens de API
+    Rails.logger.info("⏭️  Historical price import DISABLED for #{ticker} to save API tokens")
+    return 0
     
-    unless price_provider.present?
-      Rails.logger.warn("No provider configured for Security.import_provider_prices")
-      return 0
-    end
-
-    Rails.logger.info("Using #{price_provider.class.name} for historical prices: #{ticker}")
-
-    Security::Price::Importer.new(
-      security: self,
-      security_provider: price_provider,
-      start_date: start_date,
-      end_date: end_date,
-      clear_cache: clear_cache
-    ).import_provider_prices
+    # CÓDIGO ORIGINAL (comentado):
+    # price_provider = self.class.historical_price_provider
+    # 
+    # unless price_provider.present?
+    #   Rails.logger.warn("No provider configured for Security.import_provider_prices")
+    #   return 0
+    # end
+    #
+    # Rails.logger.info("Using #{price_provider.class.name} for historical prices: #{ticker}")
+    #
+    # Security::Price::Importer.new(
+    #   security: self,
+    #   security_provider: price_provider,
+    #   start_date: start_date,
+    #   end_date: end_date,
+    #   clear_cache: clear_cache
+    # ).import_provider_prices
   end
 
   private

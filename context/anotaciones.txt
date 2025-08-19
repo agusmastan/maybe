@@ -10,3 +10,7 @@ bundle exec rails runner context/test_import_market_data_job.rb
 
 Actualizar logos
 bundle exec rails runner 'Security.where(logo_url: [nil, ""]).each { |s| puts "Actualizando #{s.ticker}..."; s.import_provider_details(clear_cache: true); puts "Logo: #{s.reload.logo_url.present? ? "✅" : "❌"}" }'
+
+Actualizar precios (ejecuta job import_market_data)
+docker compose exec web bash
+RAILS_ENV=production bundle exec rails runner "ImportMarketDataJob.perform_now(mode: 'snapshot', clear_cache: false)"

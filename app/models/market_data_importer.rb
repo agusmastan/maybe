@@ -15,22 +15,28 @@ class MarketDataImporter
     import_exchange_rates
   end
 
-  # Syncs historical security prices (and details)
+  # Syncs CURRENT security prices only (no historical data to save API tokens)
   def import_security_prices
     unless Security.provider
       Rails.logger.warn("No provider configured for MarketDataImporter.import_security_prices, skipping sync")
       return
     end
 
+    Rails.logger.info("🔄 Importing CURRENT prices only (historical disabled to save API tokens)")
+    
     # Import all securities that aren't marked as "offline" (i.e. they're available from the provider)
     Security.online.find_each do |security|
-      security.import_provider_prices(
-        start_date: get_first_required_price_date(security),
-        end_date: end_date,
-        clear_cache: clear_cache
-      )
-
-      security.import_provider_details(clear_cache: clear_cache)
+      begin
+        # Only fetch current price (today) - no historical data
+        security.find_or_fetch_price(date: Date.current, cache: false)
+        
+        # Import basic details (logo, name, etc.)
+        security.import_provider_details(clear_cache: clear_cache)
+        
+        Rails.logger.info("✅ Updated current price for #{security.ticker}")
+      rescue => e
+        Rails.logger.error("❌ Failed to update #{security.ticker}: #{e.message}")
+      end
     end
   end
 
@@ -40,17 +46,14 @@ class MarketDataImporter
       return
     end
 
-    required_exchange_rate_pairs.each do |pair|
-      # pair is a Hash with keys :source, :target, and :start_date
-      start_date = snapshot? ? default_start_date : pair[:start_date]
-
-      ExchangeRate.import_provider_rates(
-        from: pair[:source],
-        to: pair[:target],
-        start_date: start_date,
-        end_date: end_date,
-        clear_cache: clear_cache
-      )
+    Rails.logger.info("🔄 Importing CURRENT exchange rates only (historical disabled to save API tokens)")
+    
+    # Only update current USD-EUR rate to save API tokens
+    begin
+      ExchangeRate.update_usd_to_eur_rate!
+      Rails.logger.info("✅ Updated current USD-EUR exchange rate")
+    rescue => e
+      Rails.logger.error("❌ Failed to update USD-EUR rate: #{e.message}")
     end
   end
 
