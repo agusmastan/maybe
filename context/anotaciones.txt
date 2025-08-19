@@ -14,3 +14,49 @@ bundle exec rails runner 'Security.where(logo_url: [nil, ""]).each { |s| puts "A
 Actualizar precios (ejecuta job import_market_data)
 docker compose exec web bash
 RAILS_ENV=production bundle exec rails runner "ImportMarketDataJob.perform_now(mode: 'snapshot', clear_cache: false)"
+
+
+RAILS_ENV=production bundle exec rails runner "
+security = Security.find_by(ticker: 'BINANCE:ETHUSDT')
+if security.present?
+  puts '🔄 Actualizando BINANCE:ETHUSDT...'
+  puts '   Estado actual:'
+  puts '   - Nombre: ' + (security.name || 'Sin nombre').to_s
+  puts '   - Logo: ' + (security.logo_url || 'Sin logo').to_s
+  
+  begin
+    # 2. Actualizar detalles manualmente
+    puts '🏷️  Actualizando detalles manualmente...'
+    security.update!(
+      name: 'Ethereum'
+    )
+    
+    puts '✅ Actualización completada:'
+    if price.present?
+      puts '   - Precio: ' + price.price.to_s + ' ' + price.currency + ' (' + price.date.to_s + ')'
+    else
+      puts '   - Precio: ❌ No disponible'
+    end
+    puts '   - Nombre: ' + security.name.to_s
+    puts '   - Logo: ' + security.logo_url.to_s
+    puts '   - Exchange: ' + (security.exchange_operating_mic || 'N/A').to_s
+    puts '   - Offline: ' + security.offline.to_s
+    
+  rescue => e
+    puts '❌ Error durante la actualización: ' + e.message
+    puts e.backtrace.first(3).join(\"\\n\")
+  end
+else
+  puts '❌ Security BINANCE:ETHUSDT no encontrado'
+  puts '🔍 Buscando securities similares...'
+  similar = Security.where('ticker ILIKE ?', '%ETH%').limit(5)
+  if similar.any?
+    puts '   Securities encontrados con ETH:'
+    similar.each do |s|
+      puts '   - ' + s.ticker + ': ' + (s.name || 'Sin nombre')
+    end
+  else
+    puts '   No se encontraron securities similares'
+  end
+end
+"
