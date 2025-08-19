@@ -33,7 +33,7 @@
       } %>
     </section>
     <section>
-      <%= render "pages/dashboard/balance_sheet", balance_sheet: @balance_sheet %>
+      <%= render "pages/dashboard/assets_sheet", balance_sheet: @balance_sheet %>
     </section>
 
     <%= turbo_frame_tag "cashflow_sankey_section" do %>
@@ -44,6 +44,10 @@
         } %>
       </section>
     <% end %>
+
+    <section>
+      <%= render "pages/dashboard/liabilities_sheet", balance_sheet: @balance_sheet %>
+    </section>
   <% else %>
     <section>
       <%= render "pages/dashboard/no_accounts_graph_placeholder" %>
