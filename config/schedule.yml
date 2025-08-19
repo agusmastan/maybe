@@ -1,5 +1,5 @@
 import_market_data:
-  cron: "0 22 * * 1-5" # 5:00 PM EST / 6:00 PM EDT (NY time) Monday through Friday
+  cron: "0 */6 * * *" # Every 6 hours (00:00, 06:00, 12:00, 18:00 UTC)
   class: "ImportMarketDataJob"
   queue: "scheduled"
   description: "Imports market data daily at 5:00 PM EST (1 hour after market close)"
@@ -18,9 +18,3 @@ run_security_health_checks:
   class: "SecurityHealthCheckJob"
   queue: "scheduled"
   description: "Runs security health checks to detect issues with security data"
-
-update_usd_to_eur:
-  cron: "0 */12 * * *" # Every 12 hours (00:00 and 12:00 UTC)
-  class: "UpdateUsdToEurJob"
-  queue: "scheduled"
-  description: "Updates USD to EUR exchange rate using AlphaVantage API"
