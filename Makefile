@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs shell test lint format clean migrate collectstatic createsuperuser
+.PHONY: help rebuild build stop up down restart logs logs-web shell dbshell update-data
 
 # Default target
 help: ## Mostrar este mensaje de ayuda
@@ -12,16 +12,19 @@ rebuild: ## Reconstruir las imágenes de Docker
 build: ## Construir las imágenes de Docker
 	docker compose build
 
-up: ## Levantar todos los servicios
+stop: ## Parar todos los contenedores
+	docker compose stop
+
+up: ## Levantar todos los contenedores
 	docker compose up -d
 
-down: ## Parar todos los servicios
+down: ## Eliminar todos los contenedores
 	docker compose down
 
-restart: ## Reiniciar todos los servicios
+restart: ## Reiniciar todos los contenedores
 	docker compose restart
 
-logs: ## Ver logs de todos los servicios
+logs: ## Ver logs de todos los contenedores
 	docker compose logs -f
 
 logs-web: ## Ver logs del servicio web
@@ -34,8 +37,9 @@ shell: ## Abrir shell del servidor web
 dbshell: ## Abrir shell de PostgreSQL
 	docker compose exec db psql -U maybe_user -d maybe_production
 
-import-market-data: ## Ejecutar el job ImportMarketDataJob para importar datos de mercado
-	docker compose exec web bundle exec rails runner "ImportMarketDataJob.perform_now(mode: 'snapshot', clear_cache: false)"
+update-data: ## Ejecutar el job ImportMarketDataJob para actualizar los datos de mercado
+	docker compose exec web bundle exec rails runner "ImportMarketDataJob.perform_now(mode: 'snapshot')" && \
+	docker compose exec web bundle exec rails runner "Family.first.sync_later"
 
 
 

@@ -28,7 +28,7 @@ class MarketDataImporter
     Security.online.find_each do |security|
       begin
         # Only fetch current price (today) - no historical data
-        security.find_or_fetch_price(date: Date.current, cache: false)
+        security.find_or_fetch_price(date: Date.current, cache: true)
         
         # Import basic details (logo, name, etc.)
         security.import_provider_details(clear_cache: clear_cache)

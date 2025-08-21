@@ -23,7 +23,9 @@ ENV RAILS_ENV="production" \
 FROM base AS build
 
 # Install packages needed to build gems
-RUN apt-get install --no-install-recommends -y build-essential libpq-dev git pkg-config libyaml-dev
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y build-essential libpq-dev git pkg-config libyaml-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install application gems
 COPY .ruby-version Gemfile Gemfile.lock ./
