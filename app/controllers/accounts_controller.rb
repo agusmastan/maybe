@@ -10,8 +10,17 @@ class AccountsController < ApplicationController
   end
 
   def sync_all
+    # Actualizar datos de mercado (precios y tasas de cambio) antes de sincronizar
+    begin
+      ImportMarketDataJob.perform_now(mode: 'snapshot', clear_cache: false)
+      Rails.logger.info("Market data updated successfully before family sync")
+    rescue => e
+      Rails.logger.error("Failed to update market data: #{e.message}")
+      # Continuar con la sincronización aunque falle la actualización de datos de mercado
+    end
+
     family.sync_later
-    redirect_to accounts_path, notice: "Syncing accounts..."
+    redirect_to accounts_path, notice: "Syncing accounts and updating market data..."
   end
 
   def show

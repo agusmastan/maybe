@@ -86,12 +86,22 @@ module Security::Provided
     return nil unless response.success? # Provider error
 
     price = response.data
-    Security::Price.find_or_create_by!(
-      security_id: self.id,
-      date: price.date,
-      price: price.price,
-      currency: price.currency
-    ) if cache
+    
+    if cache
+      # Buscar o crear el registro, actualizando el precio si ya existe
+      db_price = Security::Price.find_or_initialize_by(
+        security_id: self.id,
+        date: price.date
+      )
+      
+      # Actualizar el precio y moneda (tanto si es nuevo como si ya existe)
+      db_price.price = price.price
+      db_price.currency = price.currency
+      db_price.save!
+      
+      Rails.logger.info("💾 Saved price for #{ticker}: #{price.price} #{price.currency} on #{price.date}")
+    end
+    
     price
   end
 
