@@ -58,3 +58,9 @@ puts "Total precios para hoy: #{final_count}"
 
 
 
+
+
+
+
+
+
