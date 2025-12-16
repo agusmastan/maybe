@@ -1,11 +1,48 @@
 <%# locals: (form:) %>
-<div class="p-3">
+<div class="p-3" data-controller="date-range-presets">
+  <div class="flex flex-wrap gap-1 mb-3">
+    <button type="button" data-action="date-range-presets#selectPreset" data-preset="1d"
+            class="px-2 py-1 text-xs rounded-md bg-container-inset text-secondary hover:bg-surface hover:text-primary transition-colors">
+      <%= t("transactions.searches.filters.date_filter.preset_1d") %>
+    </button>
+    <button type="button" data-action="date-range-presets#selectPreset" data-preset="wtd"
+            class="px-2 py-1 text-xs rounded-md bg-container-inset text-secondary hover:bg-surface hover:text-primary transition-colors">
+      <%= t("transactions.searches.filters.date_filter.preset_wtd") %>
+    </button>
+    <button type="button" data-action="date-range-presets#selectPreset" data-preset="7d"
+            class="px-2 py-1 text-xs rounded-md bg-container-inset text-secondary hover:bg-surface hover:text-primary transition-colors">
+      <%= t("transactions.searches.filters.date_filter.preset_7d") %>
+    </button>
+    <button type="button" data-action="date-range-presets#selectPreset" data-preset="mtd"
+            class="px-2 py-1 text-xs rounded-md bg-container-inset text-secondary hover:bg-surface hover:text-primary transition-colors">
+      <%= t("transactions.searches.filters.date_filter.preset_mtd") %>
+    </button>
+    <button type="button" data-action="date-range-presets#selectPreset" data-preset="30d"
+            class="px-2 py-1 text-xs rounded-md bg-container-inset text-secondary hover:bg-surface hover:text-primary transition-colors">
+      <%= t("transactions.searches.filters.date_filter.preset_30d") %>
+    </button>
+    <button type="button" data-action="date-range-presets#selectPreset" data-preset="qtd"
+            class="px-2 py-1 text-xs rounded-md bg-container-inset text-secondary hover:bg-surface hover:text-primary transition-colors">
+      <%= t("transactions.searches.filters.date_filter.preset_qtd") %>
+    </button>
+    <button type="button" data-action="date-range-presets#selectPreset" data-preset="ytd"
+            class="px-2 py-1 text-xs rounded-md bg-container-inset text-secondary hover:bg-surface hover:text-primary transition-colors">
+      <%= t("transactions.searches.filters.date_filter.preset_ytd") %>
+    </button>
+    <button type="button" data-action="date-range-presets#selectPreset" data-preset="1y"
+            class="px-2 py-1 text-xs rounded-md bg-container-inset text-secondary hover:bg-surface hover:text-primary transition-colors">
+      <%= t("transactions.searches.filters.date_filter.preset_1y") %>
+    </button>
+  </div>
+
   <%= form.date_field :start_date,
                       placeholder: "Start date",
                       value: @q[:start_date],
+                      data: { date_range_presets_target: "startDate" },
                       class: "block w-full border border-secondary rounded-md bg-container py-2 pl-3 pr-3  focus:ring-gray-500 sm:text-sm" %>
   <%= form.date_field :end_date,
                       placeholder: "End date",
                       value: @q[:end_date],
+                      data: { date_range_presets_target: "endDate" },
                       class: "block w-full border border-secondary rounded-md bg-container py-2 pl-3 pr-3  focus:ring-gray-500 sm:text-sm mt-2" %>
 </div>

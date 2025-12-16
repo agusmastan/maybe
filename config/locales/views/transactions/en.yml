@@ -58,6 +58,15 @@ en:
           greater_than: Greater than
           less_than: Less than
           placeholder: '0'
+        date_filter:
+          preset_1d: 1D
+          preset_wtd: WTD
+          preset_7d: 7D
+          preset_mtd: MTD
+          preset_30d: 30D
+          preset_qtd: QTD
+          preset_ytd: YTD
+          preset_1y: 1Y
         badge:
           expense: Expense
           income: Income
