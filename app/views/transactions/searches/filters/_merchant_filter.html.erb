@@ -4,6 +4,15 @@
     <input type="search" autocomplete="off" placeholder="Filter merchants" data-list-filter-target="input" data-action="input->list-filter#filter" class="block w-full bg-container border border-secondary rounded-md py-2 pl-10 pr-3 focus:ring-gray-500 sm:text-sm">
     <%= icon("search", class: "absolute inset-y-0 left-2 top-1/2 transform -translate-y-1/2") %>
   </div>
+  <div class="flex gap-2 mt-2">
+    <button type="button" data-action="list-filter#selectAll" class="text-xs text-secondary hover:text-primary">
+      <%= t("transactions.searches.filters.select_all") %>
+    </button>
+    <span class="text-secondary">|</span>
+    <button type="button" data-action="list-filter#deselectAll" class="text-xs text-secondary hover:text-primary">
+      <%= t("transactions.searches.filters.deselect_all") %>
+    </button>
+  </div>
   <div class="my-2" id="list" data-list-filter-target="list">
     <% Current.family.assigned_merchants.alphabetically.each do |merchant| %>
       <div class="filterable-item flex items-center gap-2 p-2" data-filter-name="<%= merchant.name %>">

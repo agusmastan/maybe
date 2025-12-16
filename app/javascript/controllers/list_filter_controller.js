@@ -31,4 +31,22 @@ export default class extends Controller {
       this.emptyMessageTarget.classList.remove("hidden");
     }
   }
+
+  selectAll() {
+    const checkboxes = this.listTarget.querySelectorAll(
+      '.filterable-item input[type="checkbox"]'
+    );
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = true;
+    });
+  }
+
+  deselectAll() {
+    const checkboxes = this.listTarget.querySelectorAll(
+      '.filterable-item input[type="checkbox"]'
+    );
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = false;
+    });
+  }
 }

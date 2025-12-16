@@ -51,6 +51,8 @@ en:
       transactions: transactions
     searches:
       filters:
+        select_all: Select all
+        deselect_all: Deselect all
         amount_filter:
           equal_to: Equal to
           greater_than: Greater than
