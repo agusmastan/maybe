@@ -7,10 +7,15 @@ gem "rails", "~> 7.2.2"
 
 # Drivers
 gem "pg", "~> 1.5"
-gem "redis", "~> 5.4"
+
+# Solid Stack - replaces Redis + Sidekiq for low-memory deployments
+gem "solid_queue"
+gem "solid_cache"
+gem "solid_cable"
+gem "mission_control-jobs"
 
 # Deployment
-gem "puma", ">= 5.0"
+gem "puma", ">= 6.0"
 gem "bootsnap", require: false
 
 # Assets
@@ -30,16 +35,13 @@ gem "lookbook", "2.3.11"
 
 gem "hotwire_combobox"
 
-# Background Jobs
-gem "sidekiq"
-gem "sidekiq-cron"
+# Background Jobs - handled by Solid Queue (see Solid Stack above)
 
 # Monitoring
 gem "vernier"
 gem "rack-mini-profiler"
 gem "sentry-ruby"
 gem "sentry-rails"
-gem "sentry-sidekiq"
 gem "logtail-rails"
 gem "skylight", groups: [ :production ]
 
@@ -61,7 +63,7 @@ gem "faraday-retry"
 gem "faraday-multipart"
 gem "inline_svg"
 gem "octokit"
-gem "pagy"
+gem "pagy", "~> 9.0"
 gem "rails-settings-cached"
 gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
 gem "csv"

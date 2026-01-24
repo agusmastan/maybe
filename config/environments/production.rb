@@ -69,8 +69,13 @@ Rails.application.configure do
   # want to log everything, set the level to "debug".
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
 
+  # Cache configuration
+  # Priority: Redis (if configured) > Solid Cache (default for NAS)
   if ENV["CACHE_REDIS_URL"].present?
     config.cache_store = :redis_cache_store, { url: ENV["CACHE_REDIS_URL"] }
+  elsif ENV["REDIS_URL"].blank?
+    # Use Solid Cache when Redis is not available (NAS/low-memory setup)
+    config.cache_store = :solid_cache_store
   end
 
   config.action_mailer.perform_caching = false
@@ -107,6 +112,8 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
-  # set REDIS_URL for Sidekiq to use Redis
-  config.active_job.queue_adapter = :sidekiq
+  # Use Solid Queue for background jobs (replaces Sidekiq)
+  # Solid Queue uses PostgreSQL for job storage, eliminating Redis dependency
+  config.active_job.queue_adapter = :solid_queue
+  config.solid_queue.connects_to = { database: { writing: :queue } }
 end

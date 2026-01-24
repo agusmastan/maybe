@@ -4,7 +4,9 @@ module SelfHostable
   included do
     helper_method :self_hosted?, :self_hosted_first_login?
 
-    prepend_before_action :verify_self_host_config
+    # Redis verification is optional - only needed when using Redis
+    # NAS deployments use Solid Stack (PostgreSQL) instead of Redis
+    prepend_before_action :verify_self_host_config, if: -> { redis_required? }
   end
 
   private
@@ -16,28 +18,26 @@ module SelfHostable
       self_hosted? && User.count.zero?
     end
 
+    # Redis is only required if REDIS_URL is configured
+    # When using Solid Stack, Redis is not needed
+    def redis_required?
+      self_hosted? && ENV["REDIS_URL"].present?
+    end
+
     def verify_self_host_config
-      return unless self_hosted?
-
-      # Special handling for Redis configuration error page
-      if controller_name == "pages" && action_name == "redis_configuration_error"
-        # If Redis is now working, redirect to home
-        if redis_connected?
-          redirect_to root_path, notice: "Redis is now configured properly! You can now setup your Maybe application."
-        end
-
-        return
-      end
-
       unless redis_connected?
         redirect_to redis_configuration_error_path
       end
     end
 
     def redis_connected?
-      Redis.new.ping
+      return true unless defined?(Redis)
+      Redis.new(url: ENV["REDIS_URL"]).ping
       true
     rescue Redis::CannotConnectError
+      false
+    rescue => e
+      Rails.logger.warn("Redis connection check failed: #{e.message}")
       false
     end
 end

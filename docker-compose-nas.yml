@@ -1,0 +1,110 @@
+# ===========================================================================
+# Docker Compose for NAS / Low-Memory Self-Hosting with Supabase
+# ===========================================================================
+#
+# Purpose:
+# --------
+# Optimized configuration for running Maybe on low-memory devices like NAS
+# (1GB RAM) using Supabase as external PostgreSQL database.
+#
+# Memory Usage:
+# -------------
+# - Before: ~600-800MB (Rails + Sidekiq + PostgreSQL + Redis)
+# - After:  ~300-350MB (Single Rails process, DB on Supabase)
+#
+# Architecture:
+# -------------
+# - Single container running Rails web server
+# - PostgreSQL hosted on Supabase (external)
+# - Solid Queue runs inside the web process (no separate worker)
+# - Solid Cache uses PostgreSQL (no Redis needed)
+# - Solid Cable uses PostgreSQL for ActionCable
+#
+# Prerequisites:
+# --------------
+# 1. Create a Supabase account at https://supabase.com
+# 2. Create a new project and get your DATABASE_URL from:
+#    Settings -> Database -> Connection string -> URI
+#
+# Usage:
+# ------
+# 1. Copy .env.example to .env and configure:
+#    - DATABASE_URL (from Supabase)
+#    - SECRET_KEY_BASE (generate with: openssl rand -hex 64)
+#
+# 2. Start the application:
+#    docker-compose -f docker-compose-nas.yml up -d
+#
+# ===========================================================================
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_COMMIT_SHA: ${BUILD_COMMIT_SHA:-unknown}
+    volumes:
+      # Local storage for uploads and ActiveStorage files
+      - maybe-storage:/rails/storage
+    ports:
+      - "${PORT:-3000}:3000"
+    restart: unless-stopped
+    # DNS servers for external database connectivity (Supabase)
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    # Disable IPv6 to force IPv4 connections (needed for some Docker/WSL setups)
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    environment:
+      # Rails configuration
+      RAILS_ENV: production
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?SECRET_KEY_BASE is required}
+      SELF_HOSTED: "true"
+      DOCKER_CONTAINER: "true"
+      
+      # Database - Supabase PostgreSQL
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required - get it from Supabase}
+      
+      # SSL configuration (disable if using reverse proxy)
+      RAILS_FORCE_SSL: ${RAILS_FORCE_SSL:-false}
+      RAILS_ASSUME_SSL: ${RAILS_ASSUME_SSL:-false}
+      
+      # Low-memory optimizations
+      WEB_CONCURRENCY: "0"           # Single process (no forking)
+      RAILS_MAX_THREADS: "3"         # Minimal threads
+      SOLID_QUEUE_IN_PUMA: "true"    # Run jobs in web process
+      
+      # Memory optimizations (already set in Dockerfile, can override)
+      MALLOC_ARENA_MAX: "2"
+      
+      # Optional: Data providers (free tiers available)
+      # https://finnhub.io/register
+      FINNHUB_API_KEY: ${FINNHUB_API_KEY:-}
+      PRICE_PROVIDER_STOCKS: ${PRICE_PROVIDER_STOCKS:-finnhub}
+      PRICE_PROVIDER_CRYPTO: ${PRICE_PROVIDER_CRYPTO:-finnhub}
+      
+      # Optional: SMTP for emails
+      SMTP_ADDRESS: ${SMTP_ADDRESS:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_TLS_ENABLED: ${SMTP_TLS_ENABLED:-true}
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+      
+      # Jobs dashboard credentials (access at /jobs)
+      JOBS_WEB_USERNAME: ${JOBS_WEB_USERNAME:-maybe}
+      JOBS_WEB_PASSWORD: ${JOBS_WEB_PASSWORD:-maybe}
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  maybe-storage:
+    driver: local

@@ -1,0 +1,21 @@
+# Solid Queue Recurring Jobs (migrated from sidekiq-cron schedule.yml)
+# These jobs run on a schedule, similar to cron
+
+production:
+  import_market_data:
+    class: ImportMarketDataJob
+    queue: scheduled
+    schedule: every 6 hours
+    args:
+      mode: full
+      clear_cache: false
+
+  clean_syncs:
+    class: SyncCleanerJob
+    queue: scheduled
+    schedule: every hour
+
+  run_security_health_checks:
+    class: SecurityHealthCheckJob
+    queue: scheduled
+    schedule: every weekday at 2am

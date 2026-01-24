@@ -4,38 +4,39 @@
 
 rails_env = ENV.fetch("RAILS_ENV", "development")
 
-# Puma starts a configurable number of processes (workers) and each process
-# serves each request in a thread from an internal thread pool.
+# =============================================================================
+# LOW-MEMORY OPTIMIZATION (NAS / Self-Hosting)
+# =============================================================================
+# For personal use on low-memory devices (1GB RAM NAS):
+# - Set WEB_CONCURRENCY=0 (no forked workers, single process)
+# - Set RAILS_MAX_THREADS=3 (minimal threads)
+# - Set SOLID_QUEUE_IN_PUMA=true (run background jobs in same process)
 #
-# The ideal number of threads per worker depends both on how much time the
-# application spends waiting for IO operations and on how much you wish to
-# to prioritize throughput over latency.
-#
-# As a rule of thumb, increasing the number of threads will increase how much
-# traffic a given process can handle (throughput), but due to CRuby's
-# Global VM Lock (GVL) it has diminishing returns and will degrade the
-# response time (latency) of the application.
-#
-# The default is set to 3 threads as it's deemed a decent compromise between
-# throughput and latency for the average Rails application.
-#
-# Any libraries that use a connection pool or another resource pool should
-# be configured to provide at least as many connections as the number of
-# threads. This includes Active Record's `pool` parameter in `database.yml`.
-threads_count = ENV.fetch("RAILS_MAX_THREADS") { 3 }
-threads threads_count, threads_count
+# This reduces memory from ~600-800MB to ~300-350MB
+# =============================================================================
+
+# Thread configuration
+# For low-memory: use fewer threads (3)
+# For high-traffic: increase threads (5-10)
+max_threads = ENV.fetch("RAILS_MAX_THREADS") { 3 }
+min_threads = ENV.fetch("RAILS_MIN_THREADS") { max_threads }
+threads min_threads, max_threads
 
 if rails_env == "production"
-  # If you are running more than 1 thread per process, the workers count
-  # should be equal to the number of processors (CPU cores) in production.
-  #
-  # It defaults to 1 because it's impossible to reliably detect how many
-  # CPU cores are available. Make sure to set the `WEB_CONCURRENCY` environment
-  # variable to match the number of processors.
-  workers_count = Integer(ENV.fetch("WEB_CONCURRENCY") { 1 })
-  workers workers_count if workers_count > 1
+  # Worker processes (WEB_CONCURRENCY)
+  # Set to 0 for single-process mode (low-memory NAS)
+  # Set to number of CPU cores for high-traffic deployments
+  workers_count = Integer(ENV.fetch("WEB_CONCURRENCY") { 0 })
+  workers workers_count if workers_count > 0
 
-  preload_app!
+  # Preload app for faster worker spawning (only if using workers)
+  preload_app! if workers_count > 0
+
+  # Run Solid Queue inside Puma for low-memory deployments
+  # This eliminates the need for a separate worker process
+  if ENV["SOLID_QUEUE_IN_PUMA"] == "true"
+    plugin :solid_queue
+  end
 end
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.

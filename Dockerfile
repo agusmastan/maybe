@@ -8,16 +8,21 @@ FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim AS base
 WORKDIR /rails
 
 # Install base packages
+# - libjemalloc2: Memory allocator that reduces Ruby memory usage by 20-30%
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libvips postgresql-client libyaml-0-2
+    apt-get install --no-install-recommends -y curl libvips postgresql-client libyaml-0-2 libjemalloc2
 
-# Set production environment
+# Set production environment with memory optimizations
 ARG BUILD_COMMIT_SHA
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
-    BUILD_COMMIT_SHA=${BUILD_COMMIT_SHA}
+    BUILD_COMMIT_SHA=${BUILD_COMMIT_SHA} \
+    # Memory optimizations for low-RAM environments (NAS)
+    LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 \
+    MALLOC_ARENA_MAX=2 \
+    RUBY_YJIT_ENABLE=1
     
 # Throw-away build stage to reduce size of final image
 FROM base AS build
