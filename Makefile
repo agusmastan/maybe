@@ -12,6 +12,15 @@ rebuild: ## Reconstruir las imágenes de Docker
 build: ## Construir las imágenes de Docker
 	docker compose build
 
+build-nas: ## Construir las imágenes de Docker para NAS
+	docker compose -f docker-compose-nas.yml build
+
+up-nas: ## Levantar todos los contenedores para NAS
+	docker compose -f docker-compose-nas.yml up -d
+
+down-nas: ## Eliminar todos los contenedores para NAS
+	docker compose -f docker-compose-nas.yml down
+
 stop: ## Parar todos los contenedores
 	docker compose stop
 
