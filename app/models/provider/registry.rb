@@ -65,6 +65,14 @@ class Provider::Registry
         nil
       end
 
+      def gemini
+        api_key = ENV.fetch("GEMINI_API_KEY", Setting.respond_to?(:gemini_api_key) ? Setting.gemini_api_key : nil)
+
+        return nil unless api_key.present?
+
+        Provider::Gemini.new(api_key)
+      end
+
       def alpha_vantage
         api_key = ENV.fetch("ALPHA_VANTAGE_API_KEY", Setting.alpha_vantage_api_key)
 
@@ -111,7 +119,7 @@ class Provider::Registry
       when :crypto_prices
         %i[finnhub alpha_vantage]
       when :llm
-        []
+        %i[gemini]
       else
         %i[plaid_us plaid_eu github]
       end

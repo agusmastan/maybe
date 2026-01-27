@@ -87,7 +87,7 @@ class User < ApplicationRecord
   end
 
   def ai_available?
-    false
+    Provider::Registry.for_concept(:llm).providers.any?(&:present?)
   end
 
   def ai_enabled?
