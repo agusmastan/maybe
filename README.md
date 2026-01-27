@@ -3,9 +3,6 @@
 
 # Maybe: The personal finance app for everyone
 
-> [!IMPORTANT]
-> This repository is no longer actively maintained. You can read more about this in our [final release](https://github.com/maybe-finance/maybe/releases/tag/v0.6.0).
-
 ## Maybe Hosting
 
 Maybe is a fully working personal finance app that can be [self hosted with Docker](docs/hosting/docker.md).
