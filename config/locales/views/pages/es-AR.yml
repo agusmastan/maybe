@@ -1,0 +1,13 @@
+---
+es-AR:
+  pages:
+    changelog:
+      title: ¿Qué hay de nuevo?
+    dashboard:
+      net_worth_chart:
+        data_not_available: No hay datos disponibles para el período seleccionado
+        title: Patrimonio Neto
+      no_account_empty_state:
+        new_account: Nueva cuenta
+        no_account_subtitle: Como no se han agregado cuentas, no hay datos para mostrar. Agregá tus primeras cuentas para empezar a ver los datos del tablero.
+        no_account_title: No hay cuentas aún

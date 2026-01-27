@@ -1,0 +1,24 @@
+---
+es-AR:
+  helpers:
+    label:
+      user:
+        invite_code: Código de invitación
+    submit:
+      user:
+        create: Continuar
+  registrations:
+    create:
+      failure: Hubo un problema al registrarse.
+      invalid_invite_code: Código de invitación inválido, por favor intentá de nuevo.
+      success: Te has registrado con éxito.
+    new:
+      invitation_message: "%{inviter} te ha invitado a unirte como %{role}"
+      join_family_title: Unirse a %{family}
+      role_admin: administrador
+      role_member: miembro
+      submit: Crear cuenta
+      title: Creá tu cuenta
+      welcome_body: Para empezar, debés registrarte para una nueva cuenta. Luego podrás configurar ajustes adicionales dentro de la aplicación.
+      welcome_title: ¡Bienvenido a Maybe!
+      password_placeholder: Ingresá tu contraseña

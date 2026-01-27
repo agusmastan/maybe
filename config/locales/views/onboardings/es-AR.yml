@@ -1,0 +1,27 @@
+---
+es-AR:
+  onboardings:
+    header:
+      sign_out: Cerrar sesión
+    preferences:
+      currency: Moneda
+      date_format: Formato de fecha
+      example: Cuenta de ejemplo
+      locale: Idioma
+      preview: Vista previa de cómo se muestran los datos según las preferencias.
+      submit: Completar
+      subtitle: Vamos a configurar tus preferencias.
+      title: Configurá tus preferencias
+    profile:
+      country: País
+      first_name: Nombre
+      household_name: Nombre de la casa
+      last_name: Apellido
+      profile_image: Imagen de perfil
+      submit: Continuar
+      subtitle: Vamos a completar tu perfil.
+      title: Vamos a configurar lo básico
+    show:
+      message: Estamos muy entusiasmados de que estés acá. En el siguiente paso te haremos algunas preguntas para completar tu perfil y dejar todo listo.
+      setup: Configurar cuenta
+      title: Conocé Maybe

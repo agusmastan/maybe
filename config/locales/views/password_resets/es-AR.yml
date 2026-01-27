@@ -1,0 +1,12 @@
+---
+es-AR:
+  password_resets:
+    edit:
+      title: Restablecer contraseña
+    new:
+      requested: Por favor revisá tu correo para ver el enlace para restablecer tu contraseña.
+      submit: Restablecer contraseña
+      title: Restablecer contraseña
+    update:
+      invalid_token: Token inválido.
+      success: Tu contraseña ha sido restablecida.
