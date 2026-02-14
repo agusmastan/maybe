@@ -7,14 +7,10 @@ class PagesController < ApplicationController
     @balance_sheet = Current.family.balance_sheet
     @accounts = Current.family.accounts.visible.with_attached_logo
 
-    period_param = params[:cashflow_period]
-    @cashflow_period = if period_param.present?
-      begin
-        Period.from_key(period_param)
-      rescue Period::InvalidKeyError
-        Period.last_30_days
-      end
-    else
+    period_param = params[:cashflow_period] || Current.user&.default_period
+    @cashflow_period = begin
+      Period.from_key(period_param)
+    rescue Period::InvalidKeyError
       Period.last_30_days
     end
 
