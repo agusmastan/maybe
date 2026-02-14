@@ -13,6 +13,7 @@ class MarketDataImporter
   def import_all
     import_security_prices
     import_exchange_rates
+    sync_investment_accounts
   end
 
   # Syncs CURRENT security prices only (no historical data to save API tokens)
@@ -54,6 +55,25 @@ class MarketDataImporter
       Rails.logger.info("✅ Updated current USD-EUR exchange rate")
     rescue => e
       Rails.logger.error("❌ Failed to update USD-EUR rate: #{e.message}")
+    end
+  end
+
+  # After importing fresh prices, sync all Investment accounts so their
+  # balances reflect the latest market data.
+  def sync_investment_accounts
+    accounts = Account.where(status: "active", accountable_type: "Investment")
+
+    if accounts.none?
+      Rails.logger.info("No active Investment accounts to sync")
+      return
+    end
+
+    Rails.logger.info("Syncing #{accounts.count} Investment account(s) after market data import")
+
+    accounts.find_each do |account|
+      account.sync_later
+    rescue => e
+      Rails.logger.error("Failed to schedule sync for account #{account.id}: #{e.message}")
     end
   end
 
