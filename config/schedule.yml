@@ -1,12 +1,12 @@
 import_market_data:
-  cron: "0 */6 * * *" # Every 6 hours (00:00, 06:00, 12:00, 18:00 UTC)
+  cron: "*/15 * * * *" # Every 15 minutes (security prices for Investment holdings)
   class: "ImportMarketDataJob"
   queue: "scheduled"
-  description: "Imports market data daily at 5:00 PM EST (1 hour after market close)"
+  description: "Imports market data (security prices, exchange rates) for Investment holdings"
   args:
     mode: "full"
     clear_cache: false
-  
+
 clean_syncs:
   cron: "0 * * * *" # every hour
   class: "SyncCleanerJob"

@@ -4,7 +4,7 @@ class Provider::Gemini < Provider
   # Subclass so errors caught in this provider are raised as Provider::Gemini::Error
   Error = Class.new(Provider::Error)
 
-  MODELS = %w[gemini-2.0-flash gemini-1.5-pro gemini-1.5-flash]
+  MODELS = %w[gemini-2.5-flash gemini-1.5-pro gemini-1.5-flash]
 
   def initialize(api_key)
     @client = ::Gemini.new(
@@ -13,7 +13,7 @@ class Provider::Gemini < Provider
         api_key: api_key
       },
       options: {
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         server_sent_events: true
       }
     )

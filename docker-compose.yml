@@ -17,6 +17,8 @@ x-rails-env: &rails_env
   # Provider selection (defaults keep Finnhub for stocks/crypto)
   PRICE_PROVIDER_STOCKS: ${PRICE_PROVIDER_STOCKS:-finnhub}
   PRICE_PROVIDER_CRYPTO: ${PRICE_PROVIDER_CRYPTO:-finnhub}
+  # Gemini API key for AI features (chat, auto-categorization, merchant detection)
+  GEMINI_API_KEY: ${GEMINI_API_KEY}
 
 services:
   web:
