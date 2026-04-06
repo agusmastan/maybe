@@ -31,6 +31,8 @@ class AccountsController < ApplicationController
 
     @pagy, @entries = pagy(entries, limit: params[:per_page] || "10")
 
+    Entry.preload_for_account_activity(@entries)
+
     @activity_feed_data = Account::ActivityFeedData.new(@account, @entries)
   end
 

@@ -31,7 +31,10 @@ module Authentication
       cookie_value = cookies.signed[:session_token]
 
       if cookie_value.present?
-        Session.find_by(id: cookie_value)
+        Session.includes(
+          user: [ :family, :last_viewed_chat ],
+          active_impersonator_session: { impersonated: [ :family, :last_viewed_chat ] }
+        ).find_by(id: cookie_value)
       else
         nil
       end

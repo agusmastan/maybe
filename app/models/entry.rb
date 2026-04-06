@@ -65,6 +65,27 @@ class Entry < ApplicationRecord
       EntrySearch.new(params).build_query(all)
     end
 
+    # Preloads associations needed to render account activity (polymorphic entryables).
+    def preload_for_account_activity(entries)
+      return if entries.blank?
+
+      by_type = entries.group_by(&:entryable_type)
+
+      if (transaction_entries = by_type["Transaction"]).present?
+        ActiveRecord::Associations::Preloader.new(
+          records: transaction_entries.map(&:entryable),
+          associations: [ :category, :merchant, :tags, :transfer_as_inflow, :transfer_as_outflow ]
+        ).call
+      end
+
+      if (trade_entries = by_type["Trade"]).present?
+        ActiveRecord::Associations::Preloader.new(
+          records: trade_entries.map(&:entryable),
+          associations: [ :security ]
+        ).call
+      end
+    end
+
     # arbitrary cutoff date to avoid expensive sync operations
     def min_supported_date
       30.years.ago.to_date

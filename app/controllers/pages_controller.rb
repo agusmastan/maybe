@@ -5,7 +5,6 @@ class PagesController < ApplicationController
 
   def dashboard
     @balance_sheet = Current.family.balance_sheet
-    @accounts = Current.family.accounts.visible.with_attached_logo
 
     period_param = params[:cashflow_period] || Current.user&.default_period
     @cashflow_period = begin
