@@ -35,7 +35,7 @@ shell: ## Abrir shell del servidor web
 	docker compose exec web bash
 
 dbshell: ## Abrir shell de PostgreSQL
-	docker compose exec db psql -U maybe_user -d maybe_production
+	docker compose exec postgres psql -U maybe -d maybe_production
 
 update-data: ## Ejecutar el job ImportMarketDataJob para actualizar los datos de mercado
 	docker compose exec web bundle exec rails runner "ImportMarketDataJob.perform_now(mode: 'snapshot', clear_cache: false)" && \

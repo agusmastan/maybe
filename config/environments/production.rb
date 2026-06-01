@@ -69,15 +69,17 @@ Rails.application.configure do
   # want to log everything, set the level to "debug".
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
 
-  # Always use Redis for caching (falls back to REDIS_URL if CACHE_REDIS_URL not set)
-  cache_redis_url = ENV.fetch("CACHE_REDIS_URL") { ENV.fetch("REDIS_URL", "redis://redis:6379/1") }
-  config.cache_store = :redis_cache_store, {
-    url: cache_redis_url,
-    expires_in: 1.hour,
-    race_condition_ttl: 10.seconds,
-    compress: true,
-    compress_threshold: 1.kilobyte
-  }
+  # Use Redis for caching at runtime (skip during Docker build / asset precompilation)
+  unless ENV["SECRET_KEY_BASE_DUMMY"].present?
+    cache_redis_url = ENV.fetch("CACHE_REDIS_URL") { ENV.fetch("REDIS_URL", "redis://redis:6379/1") }
+    config.cache_store = :redis_cache_store, {
+      url: cache_redis_url,
+      expires_in: 1.hour,
+      race_condition_ttl: 10.seconds,
+      compress: true,
+      compress_threshold: 1.kilobyte
+    }
+  end
 
   config.action_mailer.perform_caching = false
   config.action_mailer.deliver_later_queue_name = :high_priority

@@ -6,8 +6,6 @@ default: &default
   checkout_timeout: 10
   reaping_frequency: 30
   prepared_statements: true
-  variables:
-    statement_timeout: '30s'
   <% if ENV["DATABASE_URL"].blank? %>
   host: <%= ENV.fetch("DB_HOST") { "127.0.0.1" } %>
   port: <%= ENV.fetch("DB_PORT") { "5432" } %>
