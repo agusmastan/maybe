@@ -1,5 +1,5 @@
 import_market_data:
-  cron: "*/15 * * * *" # Every 15 minutes (security prices for Investment holdings)
+  cron: "0 */2 * * *" # Every 2 hours (optimized for self-hosted, saves API tokens)
   class: "ImportMarketDataJob"
   queue: "scheduled"
   description: "Imports market data (security prices, exchange rates) for Investment holdings"

@@ -3,22 +3,15 @@ class AccountsController < ApplicationController
   include Periodable
 
   def index
-    @manual_accounts = family.accounts.manual.alphabetically
+    @manual_accounts = family.accounts.manual.alphabetically.includes(:accountable)
     @plaid_items = family.plaid_items.ordered
 
     render layout: "settings"
   end
 
   def sync_all
-    # Actualizar datos de mercado (precios y tasas de cambio) antes de sincronizar
-    begin
-      ImportMarketDataJob.perform_now(mode: 'snapshot', clear_cache: false)
-      Rails.logger.info("Market data updated successfully before family sync")
-    rescue => e
-      Rails.logger.error("Failed to update market data: #{e.message}")
-      # Continuar con la sincronización aunque falle la actualización de datos de mercado
-    end
-
+    # Schedule market data import in background (don't block the Puma thread)
+    ImportMarketDataJob.perform_later(mode: 'snapshot', clear_cache: false)
     family.sync_later
     redirect_to accounts_path, notice: "Syncing accounts and updating market data..."
   end

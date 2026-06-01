@@ -105,7 +105,7 @@ class Entry < ApplicationRecord
       return 0 if bulk_attributes.blank?
 
       transaction do
-        all.each do |entry|
+        all.includes(:entryable).each do |entry|
           bulk_attributes[:entryable_attributes][:id] = entry.entryable_id if bulk_attributes[:entryable_attributes].present?
           entry.update! bulk_attributes
 

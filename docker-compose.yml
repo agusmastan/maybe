@@ -1,15 +1,23 @@
 x-rails-env: &rails_env
-  # Base de datos Supabase (configurar DATABASE_URL en .env)
-  DATABASE_URL: ${DATABASE_URL}
+  # Base de datos local (PostgreSQL en la misma VM)
+  DATABASE_URL: postgres://maybe:${POSTGRES_PASSWORD:-maybe_password}@postgres:5432/maybe_production
   SECRET_KEY_BASE: ${SECRET_KEY_BASE:-a7523c3d0ae56415046ad8abae168d71074a79534a7062258f8d1d51ac2f76d3c3bc86d86b6b0b307df30d9a6a90a2066a3fa9e67c5e6f374dbd7dd4e0778e13}
   SELF_HOSTED: "true"
   RAILS_FORCE_SSL: "false"
   RAILS_ASSUME_SSL: "false"
   RAILS_ENV: "production"
+  RAILS_LOG_LEVEL: "warn"
   REDIS_URL: redis://redis:6379/1
+  CACHE_REDIS_URL: redis://redis:6379/2
   DOCKER_CONTAINER: "true"
   BIND: "tcp://0.0.0.0:3000"
   BUILD_COMMIT_SHA: ${BUILD_COMMIT_SHA:-self-hosted}
+  # Performance tuning for 2 vCPUs ARM / 12GB RAM
+  WEB_CONCURRENCY: "2"
+  RAILS_MAX_THREADS: "3"
+  SIDEKIQ_CONCURRENCY: "2"
+  DB_POOL: "5"
+  MALLOC_ARENA_MAX: "2"
   # Alpha Vantage API key for crypto prices (free tier: 25 requests/day)
   ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY}
   # Finnhub REST provider for stocks/crypto prices (free tier: 25 requests/minute)
@@ -21,6 +29,50 @@ x-rails-env: &rails_env
   GEMINI_API_KEY: ${GEMINI_API_KEY}
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: maybe
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-maybe_password}
+      POSTGRES_DB: maybe_production
+    # PostgreSQL tuned for 12GB RAM / 2 vCPUs ARM
+    command: >
+      postgres
+      -c shared_buffers=1GB
+      -c effective_cache_size=4GB
+      -c work_mem=16MB
+      -c maintenance_work_mem=256MB
+      -c max_connections=50
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c min_wal_size=256MB
+      -c max_wal_size=1GB
+      -c max_worker_processes=2
+      -c max_parallel_workers_per_gather=1
+      -c max_parallel_workers=2
+      -c huge_pages=off
+      -c log_min_duration_statement=500
+      -c idle_in_transaction_session_timeout=30000
+      -c statement_timeout=60000
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U maybe -d maybe_production"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    networks:
+      - maybe_net
+
   web:
     build:
       context: .
@@ -35,8 +87,16 @@ services:
     environment:
       <<: *rails_env
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
     networks:
       - maybe_net
     command: ["./bin/rails", "server", "-b", "0.0.0.0"]
@@ -50,28 +110,49 @@ services:
     command: bundle exec sidekiq
     restart: unless-stopped
     depends_on:
+      postgres:
+        condition: service_healthy
       redis:
         condition: service_healthy
     environment:
       <<: *rails_env
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
     networks:
       - maybe_net
 
   redis:
-    image: redis:latest
+    image: redis:7-alpine
     restart: unless-stopped
     volumes:
       - redis-data:/data
+    command: >
+      redis-server
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --appendonly no
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+        reservations:
+          memory: 128M
     networks:
       - maybe_net
 
 volumes:
   app-storage:
+  postgres-data:
   redis-data:
 
 networks:

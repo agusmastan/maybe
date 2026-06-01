@@ -37,7 +37,7 @@ class Family < ApplicationRecord
   validates :date_format, inclusion: { in: DATE_FORMATS.map(&:last) }
 
   def assigned_merchants
-    merchant_ids = transactions.where.not(merchant_id: nil).pluck(:merchant_id).uniq
+    merchant_ids = transactions.where.not(merchant_id: nil).distinct.pluck(:merchant_id)
     Merchant.where(id: merchant_ids)
   end
 
@@ -77,9 +77,9 @@ class Family < ApplicationRecord
     return true if accounts.where.not(currency: self.currency).any?
 
     # If family has any entries in different currencies, they need a provider for historical exchange rates
-    uniq_currencies = entries.pluck(:currency).uniq
-    return true if uniq_currencies.count > 1
-    return true if uniq_currencies.count > 0 && uniq_currencies.first != self.currency
+    uniq_currencies = entries.select(:currency).distinct.pluck(:currency)
+    return true if uniq_currencies.size > 1
+    return true if uniq_currencies.size > 0 && uniq_currencies.first != self.currency
 
     false
   end

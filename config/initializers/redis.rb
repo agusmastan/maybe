@@ -19,5 +19,5 @@ unless skip_connectivity_check
   end
 end
 
-# Configure Redis as the cache store
-Rails.application.config.cache_store = :redis_cache_store, { url: redis_url }
+# Cache store is configured in config/environments/production.rb
+# This initializer only handles the connectivity check
