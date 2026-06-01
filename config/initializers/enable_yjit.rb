@@ -5,6 +5,6 @@
 # hot methods sooner for better steady-state performance.
 if defined? RubyVM::YJIT.enable
   Rails.application.config.after_initialize do
-    RubyVM::YJIT.enable(call_threshold: 10)
+    RubyVM::YJIT.enable
   end
 end
