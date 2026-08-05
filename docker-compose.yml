@@ -13,10 +13,10 @@ x-rails-env: &rails_env
   BIND: "tcp://0.0.0.0:3000"
   BUILD_COMMIT_SHA: ${BUILD_COMMIT_SHA:-self-hosted}
   # Performance tuning for 2 vCPUs ARM / 12GB RAM
-  WEB_CONCURRENCY: "2"
-  RAILS_MAX_THREADS: "3"
+  WEB_CONCURRENCY: "1"
+  RAILS_MAX_THREADS: "2"
   SIDEKIQ_CONCURRENCY: "2"
-  DB_POOL: "5"
+  DB_POOL: "3"
   MALLOC_ARENA_MAX: "2"
   # Alpha Vantage API key for crypto prices (free tier: 25 requests/day)
   ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY}
@@ -41,17 +41,17 @@ services:
     # PostgreSQL tuned for 12GB RAM / 2 vCPUs ARM
     command: >
       postgres
-      -c shared_buffers=1GB
-      -c effective_cache_size=4GB
-      -c work_mem=16MB
-      -c maintenance_work_mem=256MB
-      -c max_connections=50
+      -c shared_buffers=128MB
+      -c effective_cache_size=512MB
+      -c work_mem=8MB
+      -c maintenance_work_mem=64MB
+      -c max_connections=20
       -c checkpoint_completion_target=0.9
-      -c wal_buffers=16MB
+      -c wal_buffers=4MB
       -c random_page_cost=1.1
       -c effective_io_concurrency=200
-      -c min_wal_size=256MB
-      -c max_wal_size=1GB
+      -c min_wal_size=64MB
+      -c max_wal_size=256MB
       -c max_worker_processes=2
       -c max_parallel_workers_per_gather=1
       -c max_parallel_workers=2
@@ -67,9 +67,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: 512M
         reservations:
-          memory: 1G
+          memory: 256M
     networks:
       - maybe_net
 
@@ -94,9 +94,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: 1G
         reservations:
-          memory: 512M
+          memory: 256M
     networks:
       - maybe_net
     command: ["./bin/rails", "server", "-b", "0.0.0.0"]
@@ -119,9 +119,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 512M
         reservations:
-          memory: 256M
+          memory: 128M
     networks:
       - maybe_net
 
@@ -132,7 +132,7 @@ services:
       - redis-data:/data
     command: >
       redis-server
-      --maxmemory 512mb
+      --maxmemory 64mb
       --maxmemory-policy allkeys-lru
       --save 60 1000
       --appendonly no
@@ -144,9 +144,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 600M
-        reservations:
           memory: 128M
+        reservations:
+          memory: 32M
     networks:
       - maybe_net
 

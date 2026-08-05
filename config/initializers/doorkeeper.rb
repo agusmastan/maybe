@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-Doorkeeper.configure do
+if defined?(Doorkeeper)
+  Doorkeeper.configure do
   # Change the ORM that doorkeeper will use (requires ORM extensions installed).
   # Check the list of supported ORMs here: https://github.com/doorkeeper-gem/doorkeeper#orms
   orm :active_record
@@ -543,4 +544,5 @@ Doorkeeper.configure do
   # WWW-Authenticate Realm (default: "Doorkeeper").
   #
   # realm "Doorkeeper"
+  end
 end

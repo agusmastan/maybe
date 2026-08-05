@@ -1,4 +1,4 @@
-if ENV["INTERCOM_APP_ID"].present? && ENV["INTERCOM_IDENTITY_VERIFICATION_KEY"].present?
+if defined?(IntercomRails) && ENV["INTERCOM_APP_ID"].present? && ENV["INTERCOM_IDENTITY_VERIFICATION_KEY"].present?
   IntercomRails.config do |config|
     # == Intercom app_id
     #

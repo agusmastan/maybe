@@ -24,9 +24,8 @@ gem "stimulus-rails"
 gem "turbo-rails"
 gem "view_component"
 
-# https://github.com/lookbook-hq/lookbook/issues/712
-# TODO: Remove max version constraint when fixed
-gem "lookbook", "2.3.11"
+# Lookbook - only in development (design system preview)
+# gem "lookbook", "2.3.11"
 
 gem "hotwire_combobox"
 
@@ -34,14 +33,14 @@ gem "hotwire_combobox"
 gem "sidekiq"
 gem "sidekiq-cron"
 
-# Monitoring
+# Monitoring (only vernier kept for optional profiling)
 gem "vernier"
-gem "rack-mini-profiler"
-gem "sentry-ruby"
-gem "sentry-rails"
-gem "sentry-sidekiq"
-gem "logtail-rails"
-gem "skylight", groups: [ :production ]
+# gem "rack-mini-profiler"  # Not needed in production self-hosted
+# gem "sentry-ruby"         # No Sentry DSN configured
+# gem "sentry-rails"
+# gem "sentry-sidekiq"
+# gem "logtail-rails"       # No Logtail API key configured
+# gem "skylight", groups: [ :production ]  # Paid APM, not needed
 
 # Active Storage
 gem "aws-sdk-s3", "~> 1.177.0", require: false
@@ -54,7 +53,7 @@ gem "jwt"
 gem "jbuilder"
 
 # OAuth & API Security
-gem "doorkeeper"
+# gem "doorkeeper"      # Not used (user confirmed no API/OAuth needed)
 gem "rack-attack", "~> 6.6"
 gem "faraday"
 gem "faraday-retry"
@@ -66,9 +65,9 @@ gem "rails-settings-cached"
 gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
 gem "csv"
 gem "redcarpet"
-gem "stripe"
-gem "intercom-rails"
-gem "plaid"
+# gem "stripe"          # Not needed for self-hosted (no billing)
+# gem "intercom-rails"  # Not needed for self-hosted (no support chat)
+# gem "plaid"           # Not used (user confirmed no Plaid needed)
 gem "rotp", "~> 6.3"
 gem "rqrcode", "~> 3.0"
 gem "activerecord-import"
@@ -96,6 +95,7 @@ if ENV["BENCHMARKING_ENABLED"]
 end
 
 group :development do
+  gem "lookbook", "2.3.11"  # Design system preview (dev only)
   gem "hotwire-livereload"
   gem "letter_opener"
   gem "ruby-lsp-rails"
@@ -103,6 +103,7 @@ group :development do
   gem "faker"
   gem "benchmark-ips"
   gem "stackprof"
+  gem "rack-mini-profiler"  # Profiling in dev only
   gem "derailed_benchmarks"
   gem "foreman"
 end

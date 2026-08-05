@@ -216,7 +216,7 @@ class Provider::AlphaVantage < Provider
   end
 
   # ================================
-  # EXCHANGE RATE METHODS (for ExchangeRate concept) - PUBLIC METHOD
+  # EXCHANGE RATE METHODS (for ExchangeRate concept) - PUBLIC METHODS
   # ================================
 
   def fetch_exchange_rate(from:, to:, date: Date.current)
@@ -229,6 +229,30 @@ class Provider::AlphaVantage < Provider
       end
       
       parse_exchange_rate_response(response.body, from, to, date)
+    end
+  end
+
+  # AlphaVantage free tier only provides real-time FX rates, not historical ranges.
+  # We fetch the current rate and fill the requested date range with it.
+  def fetch_exchange_rates(from:, to:, start_date:, end_date:)
+    with_provider_response do
+      response = client.get(base_url) do |req|
+        req.params["function"] = "CURRENCY_EXCHANGE_RATE"
+        req.params["from_currency"] = from.upcase
+        req.params["to_currency"] = to.upcase
+        req.params["apikey"] = api_key
+      end
+
+      current_rate = parse_exchange_rate_response(response.body, from, to, Date.current)
+
+      start_date.upto(end_date).map do |date|
+        Provider::Concepts::ExchangeRate::Rate.new(
+          from: from.upcase,
+          to: to.upcase,
+          rate: current_rate.rate,
+          date: date
+        )
+      end
     end
   end
   

@@ -1,0 +1,11 @@
+<%# locals: (balance_sheet:, **args) %>
+
+<div id="balance-sheet">
+  <section>
+    <%= render "pages/dashboard/assets_sheet", balance_sheet: balance_sheet %>
+  </section>
+
+  <section>
+    <%= render "pages/dashboard/liabilities_sheet", balance_sheet: balance_sheet %>
+  </section>
+</div>
